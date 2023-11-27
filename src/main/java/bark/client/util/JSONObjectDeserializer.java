@@ -7,10 +7,10 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 
-public class JSONObjectDeserializer extends JsonDeserializer<JSONObject> {
-    @Override
-    public JSONObject deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
-        String jsonString = jsonParser.getValueAsString();
-        return new JSONObject(jsonString);
-    }
-}
+//public class JSONObjectDeserializer extends JsonDeserializer<JSONObject> {
+//    @Override
+//    public JSONObject deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
+//      //  String jsonString = jsonParser.getValueAsString();
+//       // return new JSONObject(jsonString);
+//    }
+//}

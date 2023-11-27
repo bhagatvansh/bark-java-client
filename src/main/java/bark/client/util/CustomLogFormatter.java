@@ -1,20 +1,29 @@
 package bark.client.util;
 
+import bark.client.models.BarkLog;
+
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
 public class CustomLogFormatter extends Formatter {
 
-    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    BarkLog barkLog;
     @Override
     public String format(LogRecord record) {
-        String formattedDate = dateFormat.format(new Date(record.getMillis()));
+        barkLog= (BarkLog) record.getParameters()[0];
+        String logTime = dateFormat.format(new Date());
         String logLevel = record.getLevel().getName();
+        String serviceName = barkLog.getServiceName();
+        String serviceInstanceName = barkLog.getServiceInstanceName();
+        String code = barkLog.getCode();
         String logMessage = formatMessage(record);
 
-        return formattedDate + " " + logLevel + " " + logMessage + "\n";
+        return logTime + " | " + logLevel + " | " + serviceName + " | "
+                + serviceInstanceName + " | " + code + " | " + logMessage + "\n";
     }
+
 }

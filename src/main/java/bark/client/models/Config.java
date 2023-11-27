@@ -7,11 +7,19 @@ import bark.client.services.ingestion.LogIngester;
 import bark.client.services.sender.LogSender;
 import bark.client.util.BarkLogger;
 import bark.client.util.CustomLogFormatter;
+import bark.client.util.JSONLogFormatter;
+import bark.client.util.StandardLogFormatter;
+import org.json.JSONObject;
 
+import javax.swing.*;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.logging.ConsoleHandler;
+import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 
@@ -27,58 +35,65 @@ public class Config {
     private boolean bulkSend;
     private Logger logger;
 
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     public void Panic(String message) throws IOException {
         BarkLog barkLog = parseMessage(getConfig(),message);
         barkLog.setLogLevel(Constants.Panic);
         barkLog.setMoreData(new MoreData());
+        barkLog.setLogTime(dateFormat.format(new Date()));
         DispatchLogMessage(barkLog);
         if(logger != null){
-            logger.log(LvlPanic, message);
+            logger.log(LvlPanic, message,barkLog);
         }
     }
     public void Alert(String message) throws IOException {
         BarkLog barkLog = parseMessage(getConfig(),message);
         barkLog.setLogLevel(Constants.Alert);
         barkLog.setMoreData(new MoreData());
+        barkLog.setLogTime(dateFormat.format(new Date()));
         DispatchLogMessage(barkLog);
         if(logger != null){
-            logger.log(LvlAlert, message);
+            logger.log(LvlAlert, message, barkLog);
         }
     }
     public void Error(String message) throws IOException {
         BarkLog barkLog = parseMessage(getConfig(),message);
         barkLog.setLogLevel(Constants.Error);
         barkLog.setMoreData(new MoreData());
+        barkLog.setLogTime(dateFormat.format(new Date()));
         DispatchLogMessage(barkLog);
         if(logger != null){
-            logger.log(LvlError, message);
+            logger.log(LvlError, message,barkLog);
         }
     }
     public void Warn(String message) throws IOException {
         BarkLog barkLog = parseMessage(getConfig(),message);
         barkLog.setLogLevel(Constants.Warning);
         barkLog.setMoreData(new MoreData());
+        barkLog.setLogTime(dateFormat.format(new Date()));
         DispatchLogMessage(barkLog);
         if(logger != null){
-            logger.log(LvlWarn, message);
+            logger.log(LvlWarn, message,barkLog);
         }
     }
     public void Notice(String message) throws IOException {
         BarkLog barkLog = parseMessage(getConfig(),message);
         barkLog.setLogLevel(Constants.Notice);
         barkLog.setMoreData(new MoreData());
+        barkLog.setLogTime(dateFormat.format(new Date()));
         DispatchLogMessage(barkLog);
         if(logger != null){
-            logger.log(LvlNotice, message);
+            logger.log(LvlNotice, message,barkLog);
         }
     }
     public void Info(String message) throws IOException {
         BarkLog barkLog = parseMessage(getConfig(),message);
         barkLog.setLogLevel(Constants.Info);
-        barkLog.setMoreData(new MoreData());
+        barkLog.setMoreData(MoreData.EmptyNotNotJsonObject());
+        barkLog.setLogTime(dateFormat.format(new Date()));
         DispatchLogMessage(barkLog);
         if(logger != null){
-            logger.log(LvlInfo, message);
+            logger.log(LvlInfo, message,barkLog);
         }
     }
     public void Debug(String message) throws IOException {
@@ -88,29 +103,91 @@ public class Config {
         BarkLog barkLog = parseMessage(getConfig(),message);
         barkLog.setLogLevel(Constants.Debug);
         barkLog.setMoreData(new MoreData());
+        barkLog.setLogTime(dateFormat.format(new Date()));
         DispatchLogMessage(barkLog);
         if(logger != null){
-            logger.log(LvlDebug, message);
+            logger.log(LvlDebug, message,barkLog);
         }
     }
 
     public void Default(String message) throws IOException{
         BarkLog barkLog = parseMessage(getConfig(),message);
+        barkLog.setLogLevel(errorLevel);
         if(barkLog.getLogLevel().equals("DEBUG") && disableDebugLevelLogging){
             return;
         }
-        barkLog.setLogLevel(errorLevel);
         barkLog.setMoreData(new MoreData());
+        barkLog.setLogTime(dateFormat.format(new Date()));
         DispatchLogMessage(barkLog);
+
+        if(logger!=null) {
+            switch (barkLog.getLogLevel()) {
+                case Constants.Panic:
+                    logger.log(LvlPanic, message, barkLog);
+                    break;
+                case Constants.Notice:
+                    logger.log(LvlNotice, message, barkLog);
+                    break;
+                case Constants.Alert:
+                    logger.log(LvlAlert, message, barkLog);
+                    break;
+                case Constants.Error:
+                    logger.log(LvlError, message, barkLog);
+                    break;
+                case Constants.Warning:
+                    logger.log(LvlWarn, message, barkLog);
+                    break;
+                case Constants.Debug:
+                    logger.log(LvlDebug, message, barkLog);
+                    break;
+                case Constants.Info:
+                default:
+                    logger.log(LvlInfo, message, barkLog);
+                    break;
+            }
+        }
     }
 
     public void Println(String message) throws IOException{
         BarkLog barkLog = parseMessage(getConfig(),message);
+        if(barkLog.getLogLevel()==null) {
+            barkLog.setLogLevel(Constants.Info) ;
+        }
         if(barkLog.getLogLevel().equals("DEBUG") && disableDebugLevelLogging){
             return;
         }
         barkLog.setMoreData(new MoreData());
+        barkLog.setLogTime(dateFormat.format(new Date()));
         DispatchLogMessage(barkLog);
+
+        if(logger!=null) {
+            switch (barkLog.getLogLevel()) {
+                case Constants.Panic:
+                    logger.log(LvlPanic, message, barkLog);
+                    break;
+                case Constants.Notice:
+                    logger.log(LvlNotice, message, barkLog);
+                    break;
+                case Constants.Alert:
+                    logger.log(LvlAlert, message, barkLog);
+                    break;
+                case Constants.Error:
+                    logger.log(LvlError, message, barkLog);
+                    break;
+                case Constants.Warning:
+                    logger.log(LvlWarn, message, barkLog);
+                    break;
+                case Constants.Debug:
+                    logger.log(LvlDebug, message, barkLog);
+                    break;
+                case Constants.Info:
+                default:
+                    logger.log(LvlInfo, message, barkLog);
+                    break;
+            }
+        } else{
+            System.out.println(message);
+        }
     }
 
     public void Raw(BarkLog rawLog) throws IOException {
@@ -119,31 +196,34 @@ public class Config {
         }
         BarkLog log = new BarkLog(rawLog.getLogLevel(),rawLog.getServiceName(), rawLog.getServiceInstanceName(), rawLog.getCode(), rawLog.getMessage());
         log.setMoreData(rawLog.getMoreData());
+        log.setLogTime(dateFormat.format(new Date()));
         DispatchLogMessage(log);
 
-        switch (log.getLogLevel()) {
-            case Constants.Panic:
-                logger.log(LvlPanic, log.getMessage());
-                break;
-            case Constants.Notice:
-                logger.log(LvlNotice, log.getMessage());
-                break;
-            case Constants.Alert:
-                logger.log(LvlAlert, log.getMessage());
-                break;
-            case Constants.Error:
-                logger.log(LvlError, log.getMessage());
-                break;
-            case Constants.Warning:
-                logger.log(LvlWarn, log.getMessage());
-                break;
-            case Constants.Debug:
-                logger.log(LvlDebug, log.getMessage());
-                break;
-            case Constants.Info:
-            default:
-                logger.log(LvlInfo, log.getMessage());
-                break;
+        if(logger!=null) {
+            switch (log.getLogLevel()) {
+                case Constants.Panic:
+                    logger.log(LvlPanic, log.getMessage(), log);
+                    break;
+                case Constants.Notice:
+                    logger.log(LvlNotice, log.getMessage(), log);
+                    break;
+                case Constants.Alert:
+                    logger.log(LvlAlert, log.getMessage(), log);
+                    break;
+                case Constants.Error:
+                    logger.log(LvlError, log.getMessage(), log);
+                    break;
+                case Constants.Warning:
+                    logger.log(LvlWarn, log.getMessage(), log);
+                    break;
+                case Constants.Debug:
+                    logger.log(LvlDebug, log.getMessage(), log);
+                    break;
+                case Constants.Info:
+                default:
+                    logger.log(LvlInfo, log.getMessage(), log);
+                    break;
+            }
         }
     }
 
@@ -168,7 +248,7 @@ public class Config {
             return barkLog;
         }
 
-        String messageParsed = message.substring(positionOfDash+1,message.length()-1).trim();
+        String messageParsed = message.substring(positionOfDash+1).trim();
         barkLog.setMessage(messageParsed);
         String metadata = message.substring(0,positionOfDash).trim();
 
@@ -271,7 +351,7 @@ public class Config {
         Logger barkLogger = null;
         if(enableLogger){
             ConsoleHandler consoleHandler = new ConsoleHandler();
-            consoleHandler.setFormatter(new CustomLogFormatter());
+            consoleHandler.setFormatter(new StandardLogFormatter());
             barkLogger = newLogger("OfflineBarkLogger",consoleHandler);
         }
 
@@ -282,7 +362,7 @@ public class Config {
         return new Config(this.serverMode,this.baseUrl,this.errorLevel,this.serviceName,this.serviceInstanceName, this.logger,this.bulkSend);
     }
 
-    public static Config NewLoggerBarkClient(String defaultLogLevel) {
+    public static Config NewLoggerBarkClient(String defaultLogLevel) throws IOException {
         if(!BarkLogger.isValidLogLevel(defaultLogLevel)){
             System.out.println(String.format("E#1MFJJC - %s is not an acceptable log level. %s will be used as the default log level", defaultLogLevel, Constants.DefaultLogLevel));
             defaultLogLevel = Constants.DefaultLogLevel;
@@ -312,8 +392,6 @@ public class Config {
                         }
                     };
                     runnable.run();
-                    //Network networkCall = new Network();
-                    //networkCall.postSingleLog(barkLog, baseUrl + Constants.singleInsertUrl);
                 }
         }
     }
@@ -339,7 +417,36 @@ public class Config {
             logger.removeHandler(handler1);
         }
     }
-    public void setLoggerHandler(Handler handler){
+   /* public void setLoggerHandler(Handler handler){
+        logger.addHandler(handler);
+    }*/
+
+    public void setConsoleHandler(){
+        clearHandlers();
+        logger.addHandler(new ConsoleHandler());
+    };
+
+    public void setFileHandler(String filePath) throws IOException {
+        clearHandlers();
+        logger.addHandler(new FileHandler(filePath));
+    }
+
+    public void addHandler(Handler handler) {
         logger.addHandler(handler);
     }
+
+    public void setTextFormatter() {
+        Handler[] allHandlers = logger.getHandlers();
+        for(Handler handler : allHandlers) {
+            handler.setFormatter(new CustomLogFormatter());
+        }
+    }
+
+    public void setJSONFormatter() {
+        Handler[] allHandlers = logger.getHandlers();
+        for(Handler handler : allHandlers) {
+            handler.setFormatter(new JSONLogFormatter());
+        }
+    }
+
 }

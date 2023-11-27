@@ -1,12 +1,15 @@
 package bark.client.util;
 
 import bark.client.constants.Constants;
+import bark.client.models.BarkLog;
+import bark.client.models.MoreData;
 
 import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
-public class BarkLogger {
+public class BarkLogger extends Logger {
     public static final Level LvlPanic = new Level(Constants.Panic, Level.INFO.intValue()+500){};
     public static final Level LvlAlert = new Level(Constants.Alert, Level.INFO.intValue()+400){};
     public static final Level LvlError = new Level(Constants.Error, Level.INFO.intValue()+300){};
@@ -14,6 +17,10 @@ public class BarkLogger {
     public static final Level LvlNotice = new Level(Constants.Notice, Level.INFO.intValue()+100){};
     public static final Level LvlInfo = Level.INFO;
     public static final Level LvlDebug = new Level(Constants.Debug, Level.INFO.intValue()-100){};
+
+    protected BarkLogger(String name, String resourceBundleName) {
+        super(name, resourceBundleName);
+    }
 
     public static Logger newLogger(String loggerName, Handler handler){
         Logger logger = Logger.getLogger(loggerName);
